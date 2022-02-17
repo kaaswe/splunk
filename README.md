@@ -14,6 +14,5 @@ Install the .tgz by the GUI on a SH. Wait until the scheduled search has run to 
 
 Upgrade: from version x < 1.3.0
 Run this search once after the upgrade to extend the lookup with the new fields, then also run the built-in backup.
-| inputlookup tools_history_datasource.csv
-| eval cluster="0"
-| outputlookup append=f tools_history_datasource.csv
+
+| inputlookup tools_history_datasource.csv | eval cluster="0" | outputlookup append=f tools_history_datasource.csv
