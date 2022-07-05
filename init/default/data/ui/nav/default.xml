@@ -1,0 +1,28 @@
+<nav search_view="search" color="#65A637">
+<view name="listan" default="true" />
+
+
+    <view name="dashboards" />
+  <collection label="License">
+    <view name="license_cost" />
+    <view name="license_usage" />
+  </collection>
+   
+  <collection label="Admin">
+    <view name="listan" />
+    <view name="backup" />
+      <view name="check_new_index" />
+    <view name="init_change_cost" />
+    <view name="enrich_retention" />
+     
+  </collection>
+  
+  <collection label="Dependencies">
+    <view name="index_dependencies" />
+      
+  </collection>  
+    <view name="reports" />
+  <view name="search" />
+      <a href="about">About</a>
+    <a href="help">Help</a>
+</nav>

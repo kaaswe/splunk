@@ -1,0 +1,33 @@
+<dashboard>
+  <label>Help_</label>
+  <row>
+    <panel>
+      <html>
+        <h3>INIT (Index Name Information Table)</h3>
+        <p>This app heps with inventory of indexes, input sources and licenase calculations.</p>
+
+        <p>Setup:</p>
+        <li>1. Create a index to save summary data in. Default in app is index="summary_license_init"</li>
+        <li>2. Edit 'settings - Advanced Search - Search macro 'init_index' and set the correct index you just created.</li>
+        <li>3. Edit Search macro 'peers_exclude' and set your clusterpeer hosts!= so they will not be included in results.</li>
+        <li>4. Set your total platform and license cost in "Admin" meny or by runnint this query | makeresults | eval price="406.422" | table price | outputlookup init_license_cost.csv</li>
+        <li>5. Optional: Enable Reports and set email for 2x "Licensekostnad...." - Done.</li><br/>
+        
+        <p>Syntax (peers_excluded):</p>
+        <li>host!="peer1" OR host!="peer2"</li>
+        
+        <p>Jobs:</p>
+        <li>fwd_type - Runs daily with 7d history to create lookup fwd_type.csv </li>
+        <li>License_per_host - Runs Daily at midnight and counts license for last day. Depends on job: License_per_sourcetype</li>
+        <li>License_per_sourcetype - Runs after per host once a day and creates lookup splunk_license_usage_index_sourcetype.csv</li>
+        <li>Licensekostnad Splunk Index - Runs weekly and sends email with attached report.</li>
+        <li>Licensekostnad Splunk Index/månad - Runs monthly and sends email with attaced report.</li>
+        
+        <h3>Usage:</h3>
+        <li>To add new index to the list, access the dropdown menu "Admin" and select "Search amd update DB for new index" (only index with recent data will show upp, search further back if you don't find anything.)</li>
+        <li>Use the backup and restore function also under dropdown menu "Admin".</li>
+        <li>Index in the lookuptable that has been listed as inActive can be purged under the "admin" dropdown and Backup and restore function.</li>
+      </html>
+    </panel>
+  </row>
+</dashboard>

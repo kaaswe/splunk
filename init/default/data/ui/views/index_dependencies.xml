@@ -1,0 +1,61 @@
+<form>
+  <label>Network_viz</label>
+  <fieldset submitButton="false">
+    <input type="dropdown" token="index">
+      <label>Index</label>
+      <fieldForLabel>index</fieldForLabel>
+      <fieldForValue>index</fieldForValue>
+      <search>
+        <query>| inputlookup init_lookup.csv | stats c by index</query>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <viz type="network-diagram-viz.network-diagram-viz">
+        <search>
+          <query>| makeresults
+| appendpipe [| inputlookup init_lookup.csv | search index="$index$" | eval m=split(sourcetype,",") | mvexpand m | rename index as from| eval type="index"]
+
+| appendpipe [| inputlookup init_lookup.csv | search index="$index$" | eval hf=split(hf,",") | mvexpand hf | rename hf as from, index as to| eval type="server"]
+| appendpipe [| inputlookup init_lookup.csv | search index="$index$" | eval m=split(sourcetype,",") | mvexpand m | eval hf=split(hf,",") | mvexpand hf | rename m as from, hf as to | eval type="file"]
+ 
+ | search from=*
+ | table from, to, type</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">600</option>        
+        <option name="network-diagram-viz.network-diagram-viz.arrowLocation">none</option>
+        <option name="network-diagram-viz.network-diagram-viz.canZoom">true</option>
+        <option name="network-diagram-viz.network-diagram-viz.clusterBy">none</option>
+        <option name="network-diagram-viz.network-diagram-viz.defaultLinkLength">100</option>
+        <option name="network-diagram-viz.network-diagram-viz.defaultNodeType">file</option>
+        <option name="network-diagram-viz.network-diagram-viz.draggableNodes">true</option>
+        <option name="network-diagram-viz.network-diagram-viz.drilldownClick">singleAndDouble</option>
+        <option name="network-diagram-viz.network-diagram-viz.enablePhysics">false</option>
+        <option name="network-diagram-viz.network-diagram-viz.hierarchy">true</option>
+        <option name="network-diagram-viz.network-diagram-viz.hierarchyDirection">Bottom-Up</option>
+        <option name="network-diagram-viz.network-diagram-viz.hierarchySortMethod">directed</option>
+        <option name="network-diagram-viz.network-diagram-viz.levelSeparation">200</option>
+        <option name="network-diagram-viz.network-diagram-viz.linkTextLocation">bottom</option>
+        <option name="network-diagram-viz.network-diagram-viz.linkTextSize">medium</option>
+        <option name="network-diagram-viz.network-diagram-viz.nodeSpacing">400</option>
+        <option name="network-diagram-viz.network-diagram-viz.nodeTextSize">medium</option>
+        <option name="network-diagram-viz.network-diagram-viz.smoothEdgeType">continuous</option>
+        <option name="network-diagram-viz.network-diagram-viz.smoothEdges">false</option>
+        <option name="network-diagram-viz.network-diagram-viz.tokenNode">nd_node_token</option>
+        <option name="network-diagram-viz.network-diagram-viz.tokenToNode">nd_to_node_token</option>
+        <option name="network-diagram-viz.network-diagram-viz.tokenToolTip">nd_tooltip_token</option>
+        <option name="network-diagram-viz.network-diagram-viz.tokenValue">nd_value_token</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,47 @@
+<form>
+  <fieldset autoRun="true" submitButton="false">
+    <input depends="$hidden$" type="dropdown" token="price" searchWhenChanged="true">
+      <label>sets the cost token from csv lookup</label>
+      <fieldForLabel>price</fieldForLabel>
+      <fieldForValue>price</fieldForValue>
+      <search>
+        <query>| inputlookup init_license_cost.csv</query>
+        <earliest>-1m</earliest>
+        <latest>now</latest>
+        <progress>
+          <set token="price">$result.price$</set>
+        </progress>
+      </search>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>GrandTotal visar $price$ kostnaden för Index över tidsperioden.</title>
+      <table>
+        <search>
+          <query>`init_index`
+| eval Index=orig_index
+| eval hostCost=round(host_approximate_mb*($price$/1024/30),2)
+| eval Datum=strftime(_time, "%Y-%m-%d")
+| eval tot=round(host_approximate_mb,3)
+| stats sum(hostCost) as Cost, sum(tot) as SizeMB by Index, Datum
+| eventstats sum(Cost) as GrandTotal by Index</query>
+          <earliest>-30d@d</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">100</option>
+        <option name="drilldown">none</option>
+        <format type="color" field="GrandTotal">
+          <colorPalette type="list">[#D93F3C]</colorPalette>
+          <scale type="threshold"></scale>
+        </format>
+        <format type="number" field="Cost">
+          <option name="unit">SEK</option>
+        </format>
+        <format type="number" field="GrandTotal">
+          <option name="unit">SEK</option>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,304 @@
+<form script="refresh_button.js, tokenlinks.js">
+  <label>Index inventering</label>
+  <description>Select to filter the list to display.</description>
+  <init>
+    <set token="update_sourcetype">null</set>
+    <set token="update_uf">null</set>
+    <set token="update_hf">null</set>
+    <set token="update_retention">null</set>
+    <unset token="run_sourcetype_query"></unset>
+  </init>
+  <fieldset submitButton="true" autoRun="true">
+    <input type="dropdown" token="active" searchWhenChanged="true">
+      <label>Status</label>
+      <default>1</default>
+      <choice value="99">New</choice>
+      <choice value="1">Active</choice>
+      <choice value="0">Disabled</choice>
+    </input>
+    <input type="text" token="my_index" searchWhenChanged="true">
+      <label>index</label>
+      <default>*</default>
+      <prefix>*</prefix>
+      <suffix>*</suffix>
+    </input>
+    <input type="text" token="department" searchWhenChanged="true">
+      <label>Department</label>
+      <default>*</default>
+      <prefix>*</prefix>
+      <suffix>*</suffix>
+    </input>
+    <input type="text" token="comment" searchWhenChanged="true">
+      <label>Comment</label>
+      <default>*</default>
+      <prefix>*</prefix>
+      <suffix>*</suffix>
+    </input>
+    <input type="dropdown" token="env" searchWhenChanged="true">
+      <label>Environment</label>
+      <default>PROD</default>
+      <prefix>*</prefix>
+      <suffix>*</suffix>
+      <choice value="PROD">Prod</choice>
+      <choice value="DEV">Dev</choice>
+      <choice value="TEST">Test</choice>
+      <choice value="Splunk">Splunk</choice>
+      <choice value="*">Any</choice>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>selected entry to change</title>
+      <table>
+        <search>
+          <query>| inputlookup init_lookup.csv 
+| search index="$my_index$" department="$department$" comment="$comment$" active="$active$" env="$env$"
+| fields active comment index name department feeder consumer data_owner data_owner_email tech_owner tech_owner_email date_changed env retention security security_review uf hf sourcetype _time</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="count">25</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="wrap">true</option>
+        <drilldown>
+          <unset token="run_search"></unset>
+          <set token="my_index">$row.index$</set>
+          <set token="update_sourcetype">$row.sourcetype$</set>
+          <set token="update_uf">$row.uf$</set>
+          <set token="update_hf">$row.hf$</set>
+          <set token="update_retention">$row.retention$</set>
+          <set token="hidden">true</set>
+          <set token="run_sourcetype_query">true</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$hidden$">
+      <title>Single entry filter (only displayed after a single row have been selected.)</title>
+      <input type="dropdown" token="new_sourcetype" searchWhenChanged="true" depends="$hide_me$">
+        <label>Sourcetype</label>
+        <search>
+          <query>| tstats latest(_time) as time where index="$my_index$" by sourcetype, index | stats values(sourcetype) as sourcetype by index| fields sourcetype
+| rename prevent as $run_sourcetype_query$</query>
+        </search>
+        <fieldForLabel>sourcetype</fieldForLabel>
+        <fieldForValue>sourcetype</fieldForValue>
+        <selectFirstChoice>true</selectFirstChoice>
+      </input>
+      <input type="text" token="set_sourcetype" searchWhenChanged="true">
+        <label>Sourcetype</label>
+        <default>$update_sourcetype$</default>
+      </input>
+      <input type="dropdown" token="new_uf" searchWhenChanged="true" depends="$hide_me$">
+        <label>UF</label>
+        <search>
+          <query>index="_internal" group="per_index_thruput" sourcetype=splunkd series=$my_index$ | fields host | dedup host | rename host as Instance
+| join Instance [| inputlookup fwd_type.csv | rename "Forwarder Type" as fwd ]
+| table Instance fwd
+| eval uf=case(fwd == "Universal Forwarder", Instance)
+| dedup uf
+| fields uf
+| mvcombine delim="," uf
+| fields uf
+| rename prevent as $run_sourcetype_query$</query>
+        </search>
+        <fieldForLabel>uf</fieldForLabel>
+        <fieldForValue>uf</fieldForValue>
+        <selectFirstChoice>true</selectFirstChoice>
+      </input>
+      <input type="text" token="set_uf" searchWhenChanged="true">
+        <label>UF</label>
+        <default>$update_uf$</default>
+      </input>
+      <input type="dropdown" token="new_hf" searchWhenChanged="true" depends="$hide_me$">
+        <label>HF</label>
+        <search>
+          <query>index="_internal" group="per_index_thruput" sourcetype=splunkd series=$my_index$ | fields host | dedup host | rename host as Instance
+| join sourceHost [| inputlookup fwd_type.csv | rename "Forwarder Type" as fwd ]
+| table Instance fwd
+| eval hf=case(fwd == "Heavy Forwarder", Instance)
+| dedup hf
+| fields hf
+| mvcombine delim="," hf
+| fields hf
+| rename prevent as $run_sourcetype_query$</query>
+        </search>
+        <fieldForLabel>hf</fieldForLabel>
+        <fieldForValue>hf</fieldForValue>
+        <selectFirstChoice>true</selectFirstChoice>
+      </input>
+      <input type="text" token="set_hf" searchWhenChanged="true">
+        <label>HF</label>
+        <default>$update_hf$</default>
+      </input>
+      <input type="dropdown" token="new_retention" searchWhenChanged="true" depends="$hide_me$">
+        <label>Retention</label>
+        <search>
+          <query>| rest splunk_server=* /services/data/indexes-extended
+          | eval retention=round(frozenTimePeriodInSecs/86400,0)
+          | search title=$my_index$
+          | dedup retention
+          | fields retention
+| rename prevent as $run_sourcetype_query$</query>
+        </search>
+        <fieldForLabel>retention</fieldForLabel>
+        <fieldForValue>retention</fieldForValue>
+        <selectFirstChoice>true</selectFirstChoice>
+      </input>
+      <input type="text" token="set_retention" searchWhenChanged="true">
+        <label>retention</label>
+        <default>$update_retention$</default>
+      </input>
+      <html>
+       <button class="btn" data-value="$new_sourcetype$" data-set-token="update_sourcetype">Find Sourcetype</button>
+       <button class="btn" data-value="$new_uf$" data-set-token="update_uf">Find UF</button>
+       <button class="btn" data-value="$new_hf$" data-set-token="update_hf">Find HF</button>
+       <button class="btn" data-value="$new_retention$" data-set-token="update_retention">Find Retention</button>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Multi entry filter (affects all entries in the selected list)</title>
+      <input type="text" token="set_department" searchWhenChanged="true">
+        <label>Department</label>
+        <default>null</default>
+        <prefix>"</prefix>
+        <suffix>"</suffix>
+      </input>
+      <input type="text" token="set_comment" searchWhenChanged="true">
+        <label>Comment</label>
+        <default>null</default>
+        <prefix>"</prefix>
+        <suffix>"</suffix>
+      </input>
+      <input type="dropdown" token="set_active" searchWhenChanged="true">
+        <label>Active</label>
+        <default>null</default>
+        <prefix>"</prefix>
+        <suffix>"</suffix>
+        <choice value="99">New</choice>
+        <choice value="1">Active</choice>
+        <choice value="0">Disabled</choice>
+      </input>
+      <input type="text" token="set_consumer" searchWhenChanged="true">
+        <label>consumer</label>
+        <default>null</default>
+        <prefix>"</prefix>
+        <suffix>"</suffix>
+      </input>
+      <input type="text" token="set_data_owner" searchWhenChanged="true">
+        <label>Data owner</label>
+        <default>null</default>
+        <prefix>"</prefix>
+        <suffix>"</suffix>
+      </input>
+      <input type="text" token="set_data_owner_email" searchWhenChanged="true">
+        <label>Data Owner Email</label>
+        <default>null</default>
+        <prefix>"</prefix>
+        <suffix>"</suffix>
+      </input>
+      <input type="dropdown" token="set_env" searchWhenChanged="true">
+        <label>Environment</label>
+        <default>null</default>
+        <prefix>"</prefix>
+        <suffix>"</suffix>
+        <choice value="PROD">Prod</choice>
+        <choice value="DEV">Dev</choice>
+        <choice value="TEST">Test</choice>
+        <choice value="Splunk">Splunk</choice>
+      </input>
+      <input type="text" token="set_feeder" searchWhenChanged="true">
+        <label>feeder</label>
+        <default>null</default>
+        <prefix>"</prefix>
+        <suffix>"</suffix>
+      </input>
+      <input type="text" token="set_name" searchWhenChanged="true">
+        <label>Name</label>
+        <default>null</default>
+        <prefix>"</prefix>
+        <suffix>"</suffix>
+      </input>
+      <input type="dropdown" token="set_security" searchWhenChanged="true">
+        <label>Security class (1-4)</label>
+        <default>null</default>
+        <prefix>"</prefix>
+        <suffix>"</suffix>
+        <choice value="1">I1</choice>
+        <choice value="2">I2</choice>
+        <choice value="3">I3</choice>
+        <choice value="4">I4</choice>
+      </input>
+      <input type="text" token="set_security_review" searchWhenChanged="true">
+        <label>Security Reviewed Date</label>
+        <default>null</default>
+        <prefix>"</prefix>
+        <suffix>"</suffix>
+      </input>
+      <input type="text" token="set_tech_owner" searchWhenChanged="true">
+        <label>Tech Owner</label>
+        <default>null</default>
+        <prefix>"</prefix>
+        <suffix>"</suffix>
+      </input>
+      <input type="text" token="set_tech_owner_email" searchWhenChanged="true">
+        <label>Tech Owner Email</label>
+        <default>null</default>
+        <prefix>"</prefix>
+        <suffix>"</suffix>
+      </input>
+      <html>
+       <button class="btn btn-primary" data-value="true" data-set-token="run_search">Submit Changes</button>
+       <button id="refresh" type="button" class="btn">Refresh <i class="icon-rotate" style="font-size: 1em;"/>
+        </button>
+       
+       <a href="/app/init/$env:page$" class="btn">Reload</a>
+      </html>
+      <table>
+        <title>Applied results</title>
+        <search>
+          <done>
+            <unset token="run_search"></unset>
+          </done>
+          <query>| inputlookup init_lookup.csv 
+| search index="$my_index$" department="$department$" comment="$comment$" active="$active$" env="$env$"
+| eval active=if($set_active$="null",active,$set_active$)
+| eval comment=if($set_comment$="null",comment,$set_comment$)
+| eval consumer=if($set_consumer$="null",consumer,$set_consumer$)
+| eval data_owner=if($set_data_owner$="null",data_owner,$set_data_owner$)
+| eval data_owner_email=if($set_data_owner_email$="null",data_owner_email,$set_data_owner_email$)
+
+| eval department=if($set_department$="null",department,$set_department$)
+| eval env=if($set_env$="null",env,$set_env$)
+| eval feeder=if($set_feeder$="null",feeder,$set_feeder$)
+| eval hf=if("$set_hf$"="null",hf,"$set_hf$")
+| eval date_changed=now()
+| eval name=if($set_name$="null",name,$set_name$)
+| eval retention=if("$set_retention$"="null",retention,"$set_retention$")
+| eval security=if($set_security$="null",security,$set_security$)
+| eval security_review=if($set_security_review$="null",security_review,$set_security_review$)
+
+| eval sourcetype=if("$set_sourcetype$"="null",sourcetype,"$set_sourcetype$")
+
+| eval tech_owner=if($set_tech_owner$="null",tech_owner,$set_tech_owner$)
+| eval tech_owner_email=if($set_tech_owner_email$="null",tech_owner_email,$set_tech_owner_email$)
+| eval uf=if("$set_uf$"="null",uf,"$set_uf$")
+
+| append
+[ | inputlookup init_lookup.csv ]
+| stats latest(_time) as _time, latest(active) as active, latest(consumer) as consumer, latest(comment) as comment, latest(date_changed) as date_changed,  latest(data_owner) as data_owner, latest(data_owner_email) as data_owner_email, latest(department) as department, latest(env) as env, latest(feeder) as feeder, latest(hf) as hf, latest(name) as name, latest(retention) as retention, latest(security) as security, latest(security_review) as security_review, latest(sourcetype) as sourcetype, latest(tech_owner) as tech_owner, latest(tech_owner_email) as tech_owner_email, latest(uf) as uf by index
+| outputlookup append=f init_lookup.csv 
+| search index="$my_index$" 
+| rename CommandPreventsThisSearchFromAutoRunningBeforeTokensAreSet AS $run_search$</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</form>
