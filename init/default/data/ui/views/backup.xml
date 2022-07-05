@@ -1,0 +1,144 @@
+<dashboard script="refresh_button.js, tokenlinks.js">
+  <init>
+    <unset token="check_restore"></unset>
+  </init>
+  <label>Backup</label>
+  <row>
+    <panel>
+      <title>Data maintanence panel.</title>
+      <html>
+          <ul>
+          <button class="btn" data-value="run_purge" data-set-token="run_purge">Purge InActive</button>
+          <br/>This button will remove all datasources from the lookuptable where the active flag has been set to 0.</ul>
+          <ul>
+          <button class="btn" data-value="backup" data-set-token="run_backup">Create Backup</button>
+          <br/>Create a copy of the lookup.</ul>
+          <ul>
+          <button class="btn" data-value="check_restore" data-set-token="check_restore">Restore Backup</button>
+          <br/>Overwrites the lookup with the content from the backup if it exists.</ul>
+        </html>
+      <table>
+        <search>
+          <query>$backup_query$</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="count">1</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">none</option>
+      </table>
+    </panel>
+    <panel depends="$hideme$">
+      <title>Hidden panel to make backup</title>
+      <table>
+        <search>
+          <query>| inputlookup init_lookup.csv 
+            | outputlookup init_lookup_backup.csv 
+            | rename CommandPreventsThisSearchFromAutoRunningBeforeTokensAreSet AS $run_backup$</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+          <progress>
+            <condition>
+              <set token="show_backup">true</set>
+              <set token="backup_query">| makeresults 
+| eval tid=strftime(now(),"%c")
+| eval re="$job.resultCount$"
+| eval comment="Backup completed with nr of Items: "
+| stats values(tid) as time, values(comment) as Results, values(re) as "Backup results"</set>
+            </condition>
+          </progress>
+        </search>
+        <option name="count">100</option>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">none</option>
+        <drilldown>
+          <unset token="run_backup"></unset>
+          <unset token="run_restore"></unset>
+          <unset token="run_purge"></unset>
+        </drilldown>
+      </table>
+    </panel>
+    <panel depends="$hideme$">
+      <title>Hidden panel to restore backup</title>
+      <table>
+        <search>
+          <progress>
+            <condition>
+              <set token="show_backup">true</set>
+              <set token="backup_query">| makeresults 
+| eval tid=strftime(now(),"%c")
+| eval re="$job.resultCount$"
+| eval comment="Restore completed with nr of Items: "
+| stats values(tid) as time, values(comment) as Results, values(re) as "Restore results"</set>
+            </condition>
+          </progress>
+          <query>| inputlookup init_lookup_backup.csv 
+| outputlookup init_lookup.csv 
+| rename CommandPreventsThisSearchFromAutoRunningBeforeTokensAreSet AS $run_restore$</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="count">100</option>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">none</option>
+        <drilldown>
+          <unset token="run_backup"></unset>
+          <unset token="run_restore"></unset>
+          <unset token="run_purge"></unset>
+        </drilldown>
+      </table>
+    </panel>
+    <panel depends="$hideme$">
+      <title>Hidden panel to purge non active</title>
+      <table>
+        <search>
+          <query>| inputlookup init_lookup.csv | search active!="0"
+            | outputlookup init_lookup.csv 
+            | rename CommandPreventsThisSearchFromAutoRunningBeforeTokensAreSet AS $run_purge$</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+          <progress>
+            <condition>
+              <set token="show_backup">true</set>
+              <set token="backup_query">| makeresults 
+| eval tid=strftime(now(),"%c")
+| eval re="$job.resultCount$"
+| eval comment="Purged the lookup that now constists of Items: "
+| stats values(tid) as time, values(comment) as Results, values(re) as "Rows left"</set>
+            </condition>
+          </progress>
+        </search>
+        <option name="count">100</option>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">none</option>
+        <drilldown>
+          <unset token="run_backup"></unset>
+          <unset token="run_restore"></unset>
+          <unset token="run_purge"></unset>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Restore action</title>
+      <table>
+        <search>
+          <done>
+            <condition match="$result.enable_restore$ == &quot;1&quot;">
+              <set token="run_restore">true</set>
+            </condition>
+          </done>
+          <query>| inputlookup init_lookup_backup.csv
+| stats count c
+| eval enable_restore=if(c&gt;0,"1","0")
+| table enable_restore
+| rename CommandPreventsThisSearchFromAutoRunningBeforeTokensAreSet AS $check_restore$</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>

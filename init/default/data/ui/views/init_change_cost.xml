@@ -1,0 +1,22 @@
+<form>
+  <label>Set your license cost</label>
+  <description>Sätter ny kostand för lagring i Splunk. Beloppet är per lagrad GB per månad. (Detta värde ligger som grund för rapporter som körs per automatik)</description>
+  <fieldset submitButton="true">
+    <input type="text" token="price" searchWhenChanged="true">
+      <label>Pris SEK</label>
+    </input>
+    <html>OBS! Priset anges vid decimaler med .punkt och inte med ,komma</html>
+  </fieldset>
+  <row>
+    <panel>
+      <table>
+        <title>Results updated</title>
+        <search id="set_price">
+          <query>
+          | makeresults | eval price=$price$ | table price | outputlookup init_license_cost.csv
+          </query>
+        </search>
+      </table>
+    </panel>
+  </row>
+</form>

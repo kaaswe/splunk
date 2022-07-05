@@ -1,0 +1,191 @@
+[nav/default]
+access = read : [ admin ], write : [ admin ]
+export = none
+owner = admin
+version = 8.1.2
+modtime = 1644487243.552372000
+
+[collections/init_collection]
+export = none
+owner = admin
+version = 7.2.1
+modtime = 1555754806.947297000
+
+[transforms/lookup_init]
+access = read : [ admin ], write : [ admin ]
+export = system
+owner = admin
+version = 7.2.1
+modtime = 1555754807.012958000
+
+[collections/kvstoreinit]
+export = none
+owner = admin
+version = 6.6.3
+modtime = 1525094247.294759000
+
+[]
+access = read : [ * ], write : [ admin ]
+export = none
+version = 6.6.3
+modtime = 1528203702.257577000
+
+[views/help]
+export = none
+owner = admin
+version = 8.1.2
+modtime = 1644502630.746084000
+
+[html/help]
+access = read : [ * ], write : [ * ]
+export = none
+owner = admin
+version = 7.2.1
+modtime = 1555754806.934732000
+
+[html/about]
+export = none
+owner = admin
+version = 8.0.7
+modtime = 1623854593.043968000
+
+[app/ui]
+version = 6.6.3
+modtime = 1528109492.621451000
+
+[app/launcher]
+version = 6.6.3
+modtime = 1528109492.629358000
+
+[app/package/check_for_updates]
+version = 6.6.3
+modtime = 1528109492.630586000
+
+[app/install/state]
+version = 6.6.3
+modtime = 1526387290.071253000
+
+[savedsearches/License_per_host]
+access = read : [ * ], write : [ admin, kv_admin ]
+export = none
+owner = admin
+version = 8.1.2
+modtime = 1644500921.745209000
+
+[savedsearches/License_per_sourcetype]
+access = read : [ * ], write : [ admin ]
+export = none
+owner = admin
+version = 8.1.2
+modtime = 1644500900.519839000
+
+[views/init_license]
+export = none
+owner = admin
+version = 7.2.1
+modtime = 1555754806.973241000
+
+[views/init_license_cost]
+export = none
+owner = admin
+version = 7.2.1
+modtime = 1555754806.983501000
+
+[macros/init_index]
+access = read : [ admin ], write : [ admin ]
+export = none
+owner = admin
+version = 8.0.7
+modtime = 1623411260.621568000
+
+[macros/peers_exclude]
+access = read : [ admin ], write : [ admin ]
+export = none
+owner = admin
+version = 7.2.1
+modtime = 1555754806.992953000
+
+[views/init_change_cost]
+export = none
+owner = admin
+version = 8.1.2
+modtime = 1644486684.364507000
+
+[savedsearches/Licensekostnad%20Splunk%20Index]
+access = read : [ * ], write : [ admin ]
+export = none
+owner = admin
+version = 8.1.2
+modtime = 1644501509.219200000
+
+[savedsearches/Licensekostnad%20Splunk%20Index%2Fm%C3%A5nad]
+access = read : [ * ], write : [ admin ]
+export = none
+owner = admin
+version = 8.1.2
+modtime = 1644501515.557280000
+
+[savedsearches/Inventory%20Index]
+access = write : [ admin ]
+export = none
+owner = admin
+version = 8.0.7
+modtime = 1623852792.514570000
+
+[app/install/install_source_checksum]
+version = 8.0.7
+modtime = 1612370220.419439000
+
+[views/listan]
+owner = admin
+version = 8.1.2
+modtime = 1644502336.992978000
+
+[views/backup]
+owner = admin
+version = 8.0.7
+modtime = 1623852140.132431000
+
+[views/check_new_index]
+owner = admin
+version = 8.1.2
+modtime = 1644497012.864268000
+
+[savedsearches/init_index_inv]
+access = write : [ admin ]
+export = none
+owner = admin
+version = 8.0.7
+modtime = 1623852733.867157000
+
+[savedsearches/Fwd_type]
+access = write : [ admin ]
+export = none
+owner = admin
+version = 8.1.2
+modtime = 1644501788.758078000
+
+[views/license_usage]
+owner = admin
+version = 8.0.7
+modtime = 1623932186.926590000
+
+[views/license_cost]
+owner = admin
+version = 8.0.7
+modtime = 1623931964.685582000
+
+[views/index_dependencies]
+owner = admin
+version = 8.0.7
+modtime = 1625742512.394461000
+
+[views/enrich_retention]
+owner = admin
+version = 8.0.7
+modtime = 1625743398.267768000
+
+[views/about]
+owner = admin
+version = 8.1.2
+modtime = 1644502014.127160000

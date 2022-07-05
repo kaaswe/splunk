@@ -1,0 +1,105 @@
+<form>
+  <label>init_license</label>
+  <fieldset submitButton="false" autoRun="true">
+    <input searchWhenChanged="true" type="dropdown" token="orig_index">
+      <label>Index</label>
+      <fieldForLabel>orig_index</fieldForLabel>
+      <fieldForValue>orig_index</fieldForValue>
+      <search>
+        <query>`init_index` | dedup orig_index | table orig_index</query>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+      <default>wineventlog</default>
+      <initialValue>wineventlog</initialValue>
+    </input>
+    <input searchWhenChanged="true" token="bytesunit" type="radio">
+      <label>Display bytes in:</label>
+      <default>KB</default>
+      <!-- Static definition of choices -->
+      <choice value="KB">Kilobytes</choice>
+      <choice value="MB">Megabytes</choice>
+      <choice value="GB">Gigabytes</choice>
+      <choice value="TB">Terabytes</choice>
+    </input>
+    <input type="time" token="time" searchWhenChanged="true">
+      <label></label>
+      <default>
+        <earliest>-1d@d</earliest>
+        <latest>@d</latest>
+      </default>
+    </input>
+    <input type="text" token="price">
+      <label>Index Cost GB/mån</label>
+      <initialValue>$price$</initialValue>
+      <default>$price$</default>
+    </input>
+    <input depends="$hidden$" type="dropdown" token="price" searchWhenChanged="true">
+      <label>sets the cost token from csv lookup</label>
+      <fieldForLabel>price</fieldForLabel>
+      <fieldForValue>price</fieldForValue>
+      <search>
+        <query>| inputlookup init_license_cost.csv</query>
+        <earliest>-1m</earliest>
+        <latest>now</latest>
+        <progress>
+          <set token="price">$result.price$</set>
+        </progress>
+      </search>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>License usage per Host/Day in $bytesunit$</title>
+      <input searchWhenChanged="true" token="table_limit" type="text">
+        <label>Limit table to top:</label>
+        <default>10</default>
+      </input>
+      <chart>
+        <search>
+          <query>`init_index` orig_host!="127.0.0.1" orig_index=$orig_index$
+| stats sum(eval(event_size_b*host_events)) as totalSize by orig_host
+| eval KB=round(totalSize/1024) | eval MB=round(KB/1024,2) | eval GB=round(MB/1024,2) | eval TB=round(GB/1024,2)
+| sort orig_host
+| table orig_host $bytesunit$ 
+| head $table_limit$</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>License usage in Total per Index in MB over Time</title>
+      <chart>
+        <search>
+          <query>`init_index` | chart sum(host_approximate_mb) as TotalSize by orig_index | sort - TotalSize</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="charting.chart">bar</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Total cost per day in SEK for Index $orig_index$</title>
+      <table>
+        <title>Index volume per day in $bytesunit$</title>
+        <search>
+          <query>`init_index` orig_index=$orig_index$  
+| eval KB=round(host_approximate_mb*1024) | eval MB=round(KB/1024,2) | eval GB=round(MB/1024,2) | eval TB=round(GB/1024,2)
+| eval cost=round((host_approximate_mb*($price$/1024/30)),2)
+| eval Datum=strftime(_time, "%Y-%m-%d")
+| stats sum(cost) as totCost, sum($bytesunit$) as $bytesunit$ by Datum</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="count">50</option>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,45 @@
+<form>
+  <label>Enrich Retention</label>
+  <description>This will run and update retention on all active index that has no value set.</description>
+  <fieldset submitButton="true">
+    <input type="dropdown" token="fake">
+      <label>Run Retention Query?</label>
+      <fieldForLabel>fake</fieldForLabel>
+      <fieldForValue>fake</fieldForValue>
+      <search>
+        <query/>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+      <choice value="1">Yes</choice>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>To run chose Yes from the Dropdown menu.</title>
+      <table>
+        <search>
+          <query>| inputlookup init_lookup.csv 
+| search retention="ret" active="1"
+
+| join index type=outer [
+
+| rest splunk_server=* /services/data/indexes-extended
+| dedup title
+          | eval retention=round(frozenTimePeriodInSecs/86400,0)
+          | rename title as index
+          | table index, retention
+]
+| append
+[ | inputlookup init_lookup.csv ]
+| stats latest(_time) as _time, latest(active) as active, latest(consumer) as consumer, latest(comment) as comment, latest(date_changed) as date_changed,  latest(data_owner) as data_owner, latest(data_owner_email) as data_owner_email, latest(department) as department, latest(env) as env, latest(feeder) as feeder, latest(hf) as hf, latest(name) as name, latest(retention) as retention, latest(security) as security, latest(security_review) as security_review, latest(sourcetype) as sourcetype, latest(tech_owner) as tech_owner, latest(tech_owner_email) as tech_owner_email, latest(uf) as uf by index
+| outputlookup append=f init_lookup.csv
+| rename CommandPreventsThisSearchFromAutoRunningBeforeTokensAreSet AS $fake$</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+</form>

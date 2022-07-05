@@ -1,0 +1,64 @@
+<form>
+  <label>Search and update  DB for new Indexes</label>
+  <description>This will search for new indexes that contain data and not yet is part of the lookup DB file. Select the time how far back you lika to look for data.</description>
+  <fieldset submitButton="true">
+    <input type="time" token="field1">
+      <label></label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <query>| eventcount summarize=false index=* | dedup index | eval from="99" | eval _time=now() | fields index, from, _time
+| append [| inputlookup init_lookup.csv  | eval from="1" | eval _time=date_changed ]
+| eval date_changed=if(isnull(date_changed),now(),date_changed)
+| eval active=if(isnull(active),"99",active)
+| eval name=if(isnull(name),"99",name)
+| eval comment=if(isnull(comment),"99",comment)
+| eval department=if(isnull(department),"99",department)
+| eval consumer=if(isnull(consumer),"99",consumer)
+| eval data_owner=if(isnull(data_owner),"99",data_owner)
+| eval data_owner_email=if(isnull(data_owner_email),"99",data_owner_email)
+| eval tech_owner=if(isnull(tech_owner),"99",tech_owner)
+| eval tech_owner_email=if(isnull(tech_owner_email),"99",tech_owner_email)
+| eval env=if(isnull(env),"99",env)
+| eval feeder=if(isnull(feeder),"99",feeder)
+| eval uf=if(isnull(uf),"uf",uf)
+| eval hf=if(isnull(hf),"hf",hf)
+| eval retention=if(isnull(retention),"ret",retention)
+| eval security=if(isnull(security),"99",security)
+| eval security_review=if(isnull(security_review),"99",security_review)
+| eval sourcetype=if(isnull(sourcetype),"sourcetype",sourcetype)
+| stats latest(_time) as _time, earliest(active) as active,
+earliest(name) as name,
+earliest(comment) as comment,
+earliest(consumer) as consumer,
+earliest(env) as env, earliest(feeder) as feeder,
+earliest(data_owner) as data_owner,
+earliest(data_owner_email) as data_owner_email,
+earliest(tech_owner) as tech_owner,
+earliest(tech_owner_email) as tech_owner_email,
+earliest(department) as department,
+earliest(sourcetype) as sourcetype,
+earliest(uf) as uf,
+earliest(hf) as hf,
+earliest(retention) as retention,
+earliest(security) as security,
+earliest(security_review) as security_review,
+earliest(date_changed) as date_changed
+by index
+| outputlookup append=f init_lookup.csv</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</form>

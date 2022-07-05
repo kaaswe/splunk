@@ -1,0 +1,68 @@
+<dashboard>
+  <label>About</label>
+   <row>
+    <panel>
+      <html>
+        
+        
+        <h3>Functions:</h3>
+        <ul>  
+          <li>Description</li>
+          <li>Dependencies: App: Network viz</li>
+          
+        </ul>
+          
+          
+        
+        <h3>ToDo:</h3>
+        <ul>
+          <li>Combine INIT with DataSourceChecker app</li>
+          <li>Fix better enrichment for UF/HF</li>
+          <li>fwd_type.csv - build that to append instead of overwrite and shorten backfill time.</li>
+          <li>Evalute and verify Network Viz how it performs. Still experimental</li>
+          <br/>
+				  
+				<h4>Fixed (for next release):</h4><br />
+
+				<h3>History:</h3>
+				<h4>Version 1.4 2022-02-10</h4>
+				    <li>Removed kv-store and converted to lookup tables only</li>
+				    <li>Added backup, restore and purge function.</li>
+				    <li>Added Network viz</li>
+				    <li>Added a license overview with more stats</li>
+				    <li>This version is not SHC tested yet.</li>
+				    <br />  
+     
+				<h4>Version 1.3</h4>
+				    <li>Made app SHC ready</li>
+				    <br />
+				
+				  <h4>Version 1.2</h4>
+				    <li>search macro `peers_exclude` created with valid indexers and querys updated to contain macro instead of specific peers.</li>
+				    <li>search macro `init_index` for the summary index where license is calculated. they differ in SYS (summary_core_na) and PROD (summary_license_init).</li>
+				    <li>Saved search 'License_per_sourcetype' are scheduled to run first at midnight to feed splunk_license_usage_index_sourcetype.csv</li>
+				    <li>Saved search 'License_per_host' runs after and feeds the summary index.</li>
+				    <li>Price/index/month is stored in | outputlookup init_license_cost.csv</li>
+				    <li>Dashboard 'init_change_cost' sets new values. -Dashboard 'init_License_cost' with a table for cost per index per day for 30 days and scheduled report by mail.</li>
+				    <li>Dashboard 'init_License' shows selected index for selected time with selected cost.</li>
+				    <br />
+				
+				  <h4>Version 1.1</h4>
+				  <li>kontroll om INIT db innehåller samtliga index mot kluster, visas i lista.</li>
+				  <li>kontroll om INIT db har ett dokumenterat aktivt index som ej längre existerar i kluster.</li>
+				  <li>mvexpand av fält så att multivalue poster delas upp i listan.</li>
+				  <li>knappar för att berika data. UF - HF - Sourcetype.</li>
+				  <li>Fler fällt för dokumentering av loggkällan.(namn, feeder, consumer, uf och hf)</li>
+				  <br/>
+				
+				  <h4>Version 1.0 2017</h4>
+				    
+				    <li>App created with a KV-store to keep track of indexes and their security class.</li>
+  				  <br/>
+				  
+				</ul>
+    
+      </html>
+    </panel>
+  </row>
+</dashboard>
